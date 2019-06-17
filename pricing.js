@@ -25,14 +25,22 @@ function employerContributionDiscount(product, price) {
   return parseInt(price * 100) / 100
 }
 
+//Function returns price depending on whos getting covered
+function getCost(product, whoToCover) {
+  var priceTag = product.costs.find(function (cost) {
+    return cost.role === whoToCover
+  })
+  return priceTag
+}
+
 function medicalCostCalculations(product, fmtc, price) {
-  // go through array with function to find who is getting included in coverage
+  // go through array with function to find who is getting included in coverage to add the right cost
     fmtc.forEach(function (whoToCover){
       if (fmtc.includes(whoToCover)) {
-        var medicalCost = product.costs.find(function (cost){
+        /*var medicalCost = product.costs.find(function (cost){
         return cost.role === whoToCover
-        })
-        price += medicalCost.price
+        })*/
+        price += getCost(product, whoToCover).price
       } 
     });
 
@@ -49,9 +57,11 @@ function volLifeCostCalculations(product, fmtc, price, selectedOptions) {
       var coverage =  selectedOptions.coverageLevel.find(function (coverage) {
         return coverage.role === whoToCover
       })
-      var cost = product.costs.find(function (cost) {
+      /*var cost = product.costs.find(function (cost) {
         return cost.role === whoToCover
       })
+      */
+     var cost = getCost(product, whoToCover)
       price += (coverage.coverage / cost.costDivisor) * cost.price
     }
   })
@@ -68,9 +78,7 @@ if (fmtc.includes('ee')) {
           return coverage.role === 'ee'
         })
 
-        var eeCost = product.costs.find(function (cost) {
-          return cost.role === 'ee'
-        })
+        var eeCost = getCost(product,'ee')
 
         var salaryPercentage = eeCoverage.percentage / 100
 
