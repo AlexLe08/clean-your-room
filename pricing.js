@@ -1,3 +1,30 @@
+// Determines discounts if applicable
+function employerContributionDiscount(product, price) {
+  var dollarsOff = 0
+  var divideOrNot = 1
+  // If the product is medical then 0 dollars off
+  if (product.type === "medical") {
+
+  }
+
+// Checking if employerContribution != 'dollar' to determine if dollarsOff's value needs to change
+  else if (product.employerContribution.mode === 'dollar') {
+    price = price - product.employerContribution.contribution
+  }
+
+// If its not dollar mode, its probably percentage until proven otherwise
+  else {
+    // If the product is volLife, divide contribution by 100 before multiplying price, otherwise divide by 1 for no effect
+    if (product.type === "volLife") {
+      divideOrNot = 100
+    }
+    dollarsOff = price * ( product.employerContribution.contribution/ divideOrNot)
+  }
+  
+  price = price - dollarsOff
+  return parseInt(price * 100) / 100
+}
+
 function medicalCostCalculations(product, fmtc, price) {
   // go through array with function to find who is getting included in coverage
     fmtc.forEach(function (whoToCover){
@@ -15,25 +42,8 @@ function medicalCostCalculations(product, fmtc, price) {
 
 }
 
-//// Checking if employerContribution != 'dollar' to determine if dollarsOff's value needs to change
-// checks if the product is medical and gives 0 for no discount
-function employerContributionDiscount(product, price) {
-  var dollarsOff;
-  if (product.type === "medical") {
-    dollarsOff = 0
-  }
-
-  else if (product.employerContribution.mode != 'dollar'){
-    dollarsOff = price * ( product.employerContribution.contribution / 100)
-  }
-
-
-  price = price - dollarsOff
-  return parseInt(price * 100) / 100
-}
-
 function volLifeCostCalculations(product, fmtc, price, selectedOptions) {
-  // Go through array to find who gets coverage
+  // Go through array to find who gets coverage, making sure they are employees or spouses
   fmtc.forEach(function (whoToCover){
     if (fmtc.includes('ee') || fmtc.includes('sp')) {
       var coverage =  selectedOptions.coverageLevel.find(function (coverage) {
