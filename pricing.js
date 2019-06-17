@@ -25,22 +25,24 @@ function employerContributionDiscount(product, price) {
   return parseInt(price * 100) / 100
 }
 
-//Function returns price depending on whos getting covered
-function getCost(product, whoToCover) {
-  var priceTag = product.costs.find(function (cost) {
+//Function returns a cost or coverage value depending on inputs
+function getC(product, whoToCover) {
+  var priceTag = product.find(function (cost) {
     return cost.role === whoToCover
   })
   return priceTag
+}
+
+// Some calculation shared by 2 product types
+function mathStuff (factors, costDivisor, costPrice) {
+  return (factors / costDivisor) * costPrice
 }
 
 function medicalCostCalculations(product, fmtc, price) {
   // go through array with function to find who is getting included in coverage to add the right cost
     fmtc.forEach(function (whoToCover){
       if (fmtc.includes(whoToCover)) {
-        /*var medicalCost = product.costs.find(function (cost){
-        return cost.role === whoToCover
-        })*/
-        price += getCost(product, whoToCover).price
+        price += getC(product.costs, whoToCover).price
       } 
     });
 
@@ -54,15 +56,10 @@ function volLifeCostCalculations(product, fmtc, price, selectedOptions) {
   // Go through array to find who gets coverage, making sure they are employees or spouses
   fmtc.forEach(function (whoToCover){
     if (fmtc.includes('ee') || fmtc.includes('sp')) {
-      var coverage =  selectedOptions.coverageLevel.find(function (coverage) {
-        return coverage.role === whoToCover
-      })
-      /*var cost = product.costs.find(function (cost) {
-        return cost.role === whoToCover
-      })
-      */
-     var cost = getCost(product, whoToCover)
-      price += (coverage.coverage / cost.costDivisor) * cost.price
+      var coverage = getC(selectedOptions.coverageLevel, whoToCover)
+      var cost = getC(product.costs, whoToCover)
+
+      price += mathStuff(coverage.coverage, cost.costDivisor, cost.price)
     }
   })
 
@@ -72,17 +69,13 @@ function volLifeCostCalculations(product, fmtc, price, selectedOptions) {
 }
 
 function ltdCostCalculations(product, fmtc, price, employee) {
-
 if (fmtc.includes('ee')) {
-        var eeCoverage = product.coverage.find(function (coverage) {
-          return coverage.role === 'ee'
-        })
+        var eeCoverage = getC(product.coverage,'ee')
+        var eeCost = getC(product.costs,'ee')
 
-        var eeCost = getCost(product,'ee')
-
-        var salaryPercentage = eeCoverage.percentage / 100
-
-        price += ((employee.salary * salaryPercentage) / eeCost.costDivisor) * eeCost.price
+        // what used to be: var salaryPercentage = eeCoverage.percentage / 100
+        var someFactors = employee.salary * (eeCoverage.percentage / 100)
+        price += mathStuff(someFactors, eeCost.costDivisor, eeCost.price)
       }
 
       price = employerContributionDiscount(product, price)
